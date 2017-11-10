@@ -19,6 +19,8 @@ set -e
 
 case "$1" in
     remove|upgrade|deconfigure)
+	    systemctl stop passhportd
+	    pkill -9 -u passhport || true
     ;;
 
     failed-upgrade)

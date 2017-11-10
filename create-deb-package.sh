@@ -18,7 +18,7 @@ cp -r deb-files/debian "${BUILD_DIR}/DEBIAN"
 
 # Get the source from github
 cd "${TMP_DIR}"
-git clone http://github.com/librit/passhport.git
+git clone http://github.com/raphux/passhport.git
 
 cp -r "${TMP_DIR}/passhport/passhportd" "${BUILD_DIR}/var/lib/passhport/"
 cp -r "${TMP_DIR}/passhport/passhport-admin" "${BUILD_DIR}/var/lib/passhport/"
@@ -31,6 +31,7 @@ cp "${TMP_DIR}/passhport/passhportd/passhportd.ini" "${BUILD_DIR}/etc/passhport/
 cp "${TMP_DIR}/passhport/passhport/passhport.ini" "${BUILD_DIR}/etc/passhport/"
 cp "${TMP_DIR}/passhport/passhport-admin/passhport-admin.ini" "${BUILD_DIR}/etc/passhport/"
 cp "${TMP_DIR}/passhport/passhportd/passhportd.ini" "${BUILD_DIR}/etc/passhport/"
+cp "${TMP_DIR}/passhport/tools/passhportd.service" "${BUILD_DIR}/lib/systemd/system/"
 
 sed -i -e 's#SSH_KEY_FILE\s*=.*#SSH_KEY_FILE        = /var/lib/passhport/.ssh/authorized_keys#' "${BUILD_DIR}/etc/passhport/passhportd.ini"
 sed -i -e 's#PASSHPORT_PATH\s*=.*#PASSHPORT_PATH        = /var/lib/passhport/passhport/passhport#' "${BUILD_DIR}/etc/passhport/passhportd.ini"
@@ -51,12 +52,21 @@ sed -i -e "s#SSL_CERTIFICAT\s*=.*#SSL_CERTIFICAT = /var/lib/passhport/certs/cert
 sed -i -e "s#SSL_KEY\s*=.*#SSL_KEY = /var/lib/passhport/certs/key.pem#" "${BUILD_DIR}/etc/passhport/passhport.ini"
 sed -i -e "s#PWD_FILE_DIR\s*=.*#PWD_FILE_DIR = /var/lib/passhport/.access_passwd#" "${BUILD_DIR}/etc/passhport/passhport.ini"
 
+sed -i -e "s#ExecStart=.*#ExecStart=/var/lib/passhport/python-run-env/bin/python /var/lib/passhport/passhportd/passhportd#" "${BUILD_DIR}/lib/systemd/system/passhportd.service"
 
-cp "${TMP_DIR}/passhport/tools/passhport-admin.sh" "${BUILD_DIR}/usr/bin/passhport-admin"
-cp "${TMP_DIR}/passhport/tools/passhportd.sh" "${BUILD_DIR}/usr/sbin/passhportd"
+echo "#!/bin/bash
+# Launch the passhport-admin in the virtualenv
+/var/lib/passhport/python-run-env/bin/python /var/lib/passhport/passhport-admin/passhport-admin \"\$@\"" > "${BUILD_DIR}/usr/bin/passhport-admin"
+
+
+echo "#!/bin/bash
+# Launch the passhportd in the virtualenv
+nohup /var/lib/passhport/python-run-env/bin/python /var/lib/passhport/passhportd/passhportd >> /var/log/passhport/passhportd 2>&1 &" > "${BUILD_DIR}/usr/sbin/passhportd"
+
+chmod 755 "${BUILD_DIR}/usr/sbin/passhportd" "${BUILD_DIR}/usr/bin/passhport-admin"
+
 cp "${TMP_DIR}/passhport/tools/openssl-for-passhportd.cnf" "${BUILD_DIR}/usr/share/passhport/openssl.cnf"
 
-cp "${TMP_DIR}/passhport/tools/passhport.service" "${BUILD_DIR}/lib/systemd/system/"
 
 cp "${TMP_DIR}/passhport/tools/passhport-admin.bash_completion" "${BUILD_DIR}/etc/bash_completion.d/passhport-admin"
 
