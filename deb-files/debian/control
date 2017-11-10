@@ -1,0 +1,13 @@
+Package: passhport
+Version: VERSION
+Section: admin
+Priority: optional
+Architecture: all
+Depends: openssl
+Recommends: bash, bash-completion
+Maintainer: Raphaël Berlamont <raphael.berlamont@librit.fr>
+Homepage: https://www.passhport.org
+Vcs-Git: https://github.com/librit/passhport.git
+Description: SSH bastion server
+ PaSSHport is a software that allows you to control the SSH access of your IT components : Linux/Unix servers, network switchs, routers, WiFi access points, and any appliances that is accessed by SSH. In three words : who accesses what ?
+
